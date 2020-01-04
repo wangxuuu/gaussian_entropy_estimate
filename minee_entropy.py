@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from data.mix_gaussian import MixedGaussian
-import minee
+from models import minee
 
 # %%
 
@@ -44,16 +44,6 @@ for d in range(1, 4):
     ref_entropy_XY = minee._uniform_sample_entropy(data)
     ref_entropy_X = minee._uniform_sample_entropy(X)
     ref_entropy_Y = minee._uniform_sample_entropy(Y)
-    # %%
-
-    # plt.figure()
-    # plt.scatter(X[:, 0], Y[:, 0])
-    # plt.xlabel('X')
-    # plt.ylabel('Y')
-    # plt.show()
-
-    # %%
-
     # -------------------------- Training ----------------------------- #
     # Using Neural Network to estimate the entropy of the generated Gaussian distribution
 
@@ -64,9 +54,9 @@ for d in range(1, 4):
     ref_batch_factor = 10  #
     ####################
 
-    NN = minee.MINEE(torch.Tensor(X), torch.Tensor(Y), batch_size=batch_size,ref_batch_factor=ref_batch_factor,lr=lr)
+    NN = minee.MINEE(torch.Tensor(X), torch.Tensor(Y), batch_size=batch_size, ref_batch_factor=ref_batch_factor, lr=lr)
 
-    num_iteration = 80000
+    num_iteration = 100000
 
     entropy_XY = []
     entropy_X = []

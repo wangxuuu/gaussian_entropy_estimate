@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from data.mix_gaussian import MixedGaussian
-import mine
+from models import mine
 
 #%%
 
@@ -44,16 +44,10 @@ for d in range(1, 4):
     density_xy = density_x * density_y
     # The cross entropy of the reference distribution, i.e. product of marginal distribution
     H_crossentropy = -np.log(density_xy).mean()
-
-    #%%
-
     # Ground truth of entropy of mixed gaussian distribution (X,Y)
     # As the 2-d mix-gaussian data is generated independently, the entropy of (X, Y) is d times
     # the entropy of the 2-d mix-gaussian data.
     h_xy = hxy * d
-
-    #%%
-
     # -------------------------- Training ----------------------------- #
     # Using Neural Network to estimate the entropy of the generated Gaussian distribution
 
@@ -61,9 +55,9 @@ for d in range(1, 4):
     lr = 1e-4
     ma_rate = 0.1
 
-    NN = mine.MINE(torch.Tensor(X),torch.Tensor(Y),batch_size=batch_size,lr=lr,ma_rate=ma_rate)
+    NN = mine.MINE(torch.Tensor(X), torch.Tensor(Y), batch_size=batch_size, lr=lr, ma_rate=ma_rate)
 
-    num_iteration = 200000
+    num_iteration = 100000
 
     entropy_XY = []
     dXY_list = []
@@ -88,6 +82,7 @@ for d in range(1, 4):
     plt.plot(entropy_list, label='XY entropy')
     plt.axhline(h_xy, label='ground truth', linestyle='--', color='red')
     plt.xlabel('Iteration')
+    plt.ylabel('entropy')
     plt.title('XY dim=%d, learnrate=%f' % (2 * d, lr))
     plt.legend()
     plt.savefig("./results/mine/dim=%d learnrate=%f.png" % (2*d,lr))
