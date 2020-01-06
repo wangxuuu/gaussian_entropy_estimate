@@ -42,14 +42,15 @@ def _uniform_sample_entropy(data):
     dist = (data_max - data_min)
     return np.sum(np.log(dist))
 
-def _div(net, data, ref, prob):
+def _div(net, data, ref):
     # Calculate the divergence estimate using a neural network
     mean_f = net(data).mean()
     # log_mean_ef_ref = torch.logsumexp(net(ref), 0) - np.log(ref.shape[0])
-    z1 = net(ref)
-    temp  = torch.div(net(ref), torch.cuda.FloatTensor(prob.reshape((len(prob),1))))
-    log_mean_ef_ref = torch.logsumexp(temp, 0) - np.log(ref.shape[0])
-    return mean_f - log_mean_ef_ref
+    # z1 = net(ref)
+    # temp  = torch.div(net(ref), torch.cuda.FloatTensor(prob.reshape((len(prob),1))))
+    # log_mean_ef_ref = torch.logsumexp(temp, 0) - np.log(ref.shape[0])
+    log_intergral = np.log(ref.shape[0]) - torch.logsumexp(-net(ref), 0)
+    return mean_f - log_intergral
 
 
 class MINEE():
@@ -121,9 +122,9 @@ class MINEE():
             output = old_model(batch_XY_ref)
             importance = F.softmax(output, dim=0)
             importance = np.hstack(importance.data.cpu().numpy())
-            XY_ref, XY_ref_prob = importance_resample(batch_XY_ref, int(batch_XY_ref.shape[0] / 10), replace=True, prob=importance)
+            XY_ref, XY_ref_prob = importance_resample(batch_XY_ref, int(batch_XY_ref.shape[0]/10), replace=True, prob=importance)
 
-            batch_loss_XY = -_div(self.XY_net, batch_XY, XY_ref, XY_ref_prob)
+            batch_loss_XY = -_div(self.XY_net, batch_XY, XY_ref)
             batch_loss_XY.backward()
             self.XY_optimizer.step()
 
@@ -157,14 +158,14 @@ class MINEE():
         XY_ref = torch.cat((X_ref, Y_ref), dim=1)
 
         # apply importance sampling to adjust the sample weight
+        # TODO ： the number of re-sampling samples
         old_model = self.XY_net
         output = old_model(XY_ref)
         importance = F.softmax(output, dim=0)
         importance = np.hstack(importance.data.cpu().numpy())
         XY_ref, XY_ref_prob = importance_resample(XY_ref, int(XY_ref.shape[0]/10), replace=True, prob=importance)
 
-
-        dXY = _div(self.XY_net, XY, XY_ref, XY_ref_prob).cpu().item()
+        dXY = _div(self.XY_net, XY, XY_ref).cpu().item()
         # dX = _div(self.X_net, X, X_ref).cpu().item()
         # dY = _div(self.Y_net, Y, Y_ref).cpu().item()
         return dXY

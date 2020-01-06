@@ -51,7 +51,7 @@ for d in range(1, 4):
     NN = crosstraining.cross_train(torch.Tensor(X), torch.Tensor(Y), batch_size=batch_size,
                                    ref_batch_factor=ref_batch_factor, lr=lr, ma_rate=0.1, hidden_size=100, ma_ef=1)
 
-    num_iteration = 100000
+    num_iteration = 50000
     entropy_XY = []
     dXY_list = []
 
@@ -70,7 +70,7 @@ for d in range(1, 4):
             entropy_XY.append(ref_entropy_XY_MINE - dXY)
 
         if i % 100 ==0:
-            print("iteration:{0} entropy:{1} Ground truth:{2}".format(i, entropy_XY[-1], h_xy))
+            print("iteration:{0}({1:.2%}) entropy:{2} Ground truth:{3}".format(i, i/num_iteration, entropy_XY[-1], h_xy))
 
     ma_rate = 0.01  # rate of moving average
     entropy_list = entropy_XY.copy()  # see also the estimate() member function of MINE
@@ -84,5 +84,5 @@ for d in range(1, 4):
     plt.ylabel('entropy')
     plt.title('XY dim=%d' % (2 * d))
     plt.legend()
-    plt.savefig("./results/cross_training/dim=%d learnrate=%f.png" % (2 * d, lr))
+    # plt.savefig("./results/cross_training/dim=%d learnrate=%f.png" % (2 * d, lr))
     plt.show()
