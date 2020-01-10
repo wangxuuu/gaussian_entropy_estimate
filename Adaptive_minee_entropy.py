@@ -3,13 +3,17 @@ import torch
 import matplotlib.pyplot as plt
 from data.mix_gaussian import MixedGaussian
 import adaptive_minee
+import os
+
+os.makedirs('./results/adaptive_minee/softmax/', exist_ok=True)
+
 
 if torch.cuda.is_available():
     torch.set_default_tensor_type(torch.cuda.FloatTensor)
 else:
     torch.set_default_tensor_type(torch.FloatTensor)
 
-for d in range(1, 5):
+for d in range(1, 4):
     # d = 1  # d is the dimension of X and Y. The dimension of joint mix-gaussian distribution is 2*d
     rho = 0.9
     sample_size = 400
@@ -76,7 +80,7 @@ for d in range(1, 5):
     plt.xlabel('Iteration')
     plt.title('XY dim=%d' % (2 * d))
     plt.legend()
-    # plt.savefig("./results/dim=%d learnrate=%f.png" % (2 * d, lr))
+    plt.savefig("./results/adaptive_minee/softmax/dim=%d learnrate=%f.png" % (2 * d, lr))
     plt.show()
 
 

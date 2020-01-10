@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 
+
 """
 Using importance sampling to adjust the sample weight during the training process.
 That may lead to faster convergence for estimating entropy in neural network
@@ -31,25 +32,20 @@ def _uniform_sample(data, batch_size):
     data_max = data.max(dim=0)[0]
     return (data_max - data_min) * torch.rand((batch_size, data_min.shape[0])) + data_min
 
-
-def _uniform_sample_entropy(data):
-    """
-    :param data: reference uniform distribution points
-    :return: entropy of uniform distribution
-    """
-    data_min = data.min(axis=0)
-    data_max = data.max(axis=0)
-    dist = (data_max - data_min)
-    return np.sum(np.log(dist))
-
 def _div(net, data, ref):
+    # Fixme ： the number of re-sampling samples
+    data_min = data.min(dim=0)
+    data_max = data.max(dim=0)
+    dist = (data_max.values - data_min.values)
+    S = torch.sum(torch.log(dist))
+
     # Calculate the divergence estimate using a neural network
     mean_f = net(data).mean()
+
     # log_mean_ef_ref = torch.logsumexp(net(ref), 0) - np.log(ref.shape[0])
-    # z1 = net(ref)
-    # temp  = torch.div(net(ref), torch.cuda.FloatTensor(prob.reshape((len(prob),1))))
-    # log_mean_ef_ref = torch.logsumexp(temp, 0) - np.log(ref.shape[0])
-    log_intergral = np.log(ref.shape[0]) - torch.logsumexp(-net(ref), 0)
+    # return mean_f - log_mean_ef_ref
+
+    log_intergral = S + np.log(ref.shape[0]) - torch.logsumexp(-net(ref), 0)
     return mean_f - log_intergral
 
 
@@ -151,6 +147,7 @@ class MINEE():
             XY, X, Y = self.XY, self.X, self.Y
         else:
             XY = torch.cat((X, Y), dim=1)
+
         X_ref = _uniform_sample(X, batch_size=int(
             self.ref_batch_factor * X.shape[0]))
         Y_ref = _uniform_sample(Y, batch_size=int(
@@ -158,7 +155,6 @@ class MINEE():
         XY_ref = torch.cat((X_ref, Y_ref), dim=1)
 
         # apply importance sampling to adjust the sample weight
-        # TODO ： the number of re-sampling samples
         old_model = self.XY_net
         output = old_model(XY_ref)
         importance = F.softmax(output, dim=0)
@@ -171,7 +167,7 @@ class MINEE():
         return dXY
 
     def estimate(self, X=None, Y=None):
-        r"""Return the mutual information estimate.
+        r"""Return the entropy estimate.
 
         Arguments:
             X (tensor, optional): samples of X.
