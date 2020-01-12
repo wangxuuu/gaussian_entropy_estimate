@@ -9,7 +9,7 @@ from data.mix_gaussian import MixedGaussian
 from models import combine_train
 import os
 
-os.makedirs('./results/crosstrain3/', exist_ok=True)
+os.makedirs('./results/crosstrain4/', exist_ok=True)
 
 if torch.cuda.is_available():
     torch.set_default_tensor_type(torch.cuda.FloatTensor)
@@ -67,7 +67,7 @@ for d in range(1,8):
     plt.xlabel('Iteration')
     plt.title('XY dim=%d' % (2 * d))
     plt.legend()
-    plt.savefig("./results/crosstrain3/dim=%d.png" % (2 * d))
+    plt.savefig("./results/crosstrain4/dim=%d.png" % (2 * d))
     plt.show()
 
 
@@ -82,7 +82,7 @@ for d in range(1,8):
     plt.xlabel('Iteration')
     plt.title('XY dim=%d' % (2 * d))
     plt.legend()
-    plt.savefig("./results/crosstrain3/moveavg_dim=%d.png" % (2 * d))
+    plt.savefig("./results/crosstrain4/moveavg_dim=%d.png" % (2 * d))
     plt.show()
 
 

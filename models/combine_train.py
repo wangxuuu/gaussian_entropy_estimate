@@ -120,11 +120,18 @@ class CrossTrain():
 
         self.total_optimizer.zero_grad()
         # mine_loss = self.forward()
-        dXY = _div(self.XY_net, batch_XY, batch_XY_ref_mine)
-        dX = _div(self.X_net, self.X, batch_X)
-        dY = _div(self.Y_net, self.Y, batch_Y)
-        mine_loss = -(dXY - dX - dY)
-        # mine_loss = -dXY
+
+        # dXY = _div(self.XY_net, batch_XY, batch_XY_ref_mine)
+        # dX = _div(self.X_net, self.X, batch_X)
+        # dY = _div(self.Y_net, self.Y, batch_Y)
+        # mine_loss = -(dXY - dX - dY)
+
+        log_mean_ef_ref = - np.log(batch_XY.shape[0]) + \
+                            torch.logsumexp((self.XY_net(batch_XY_ref_mine)-self.X_net(batch_X)-self.Y_net(batch_Y)), 0)
+        mine_loss = -(self.XY_net(batch_XY).mean() -
+                     self.X_net(batch_X).mean() -
+                     self.Y_net(batch_Y).mean() - log_mean_ef_ref)
+
         mine_loss.backward()
         self.total_optimizer.step()
 
